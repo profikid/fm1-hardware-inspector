@@ -34,7 +34,7 @@ dl{display:grid;grid-template-columns:125px 1fr;gap:5px 12px;margin:0;font-size:
 <section class="panel"><h2>04 / BOOTLOADER</h2><div id="bootDetails"></div></section>
 <section class="panel"><h2>05 / RECOVERY</h2><div id="recoveryDetails"></div></section>
 </div></section>
-<section class="panel"><h2>REFERENCE / KNOWN FLASH IDS</h2><dl><dt>PUYA P25Q80H</dt><dd><span class="chip">0x856014</span> · 1 MiB</dd><dt>UCUN UC25HQ80</dt><dd><span class="chip">0xB36014</span> · 1 MiB</dd></dl><p class="small">Unknown ≠ safe. Unreadable ≠ missing. FM-1 and SMK-37 share the AC791N platform, but their panel wiring and flash partition layouts differ. Keep a full-flash backup.</p><div class="refs"><a href="https://github.com/jvitkauskas/m-flasher">M-Flasher</a> · <a href="https://github.com/jvitkauskas/m-flasher/issues/13">Compatibility report</a> · <a href="https://github.com/JustMikeR/mvave-fm1-unbricker">Unbricker</a></div></section>
+<section class="panel"><h2>REFERENCE / KNOWN FLASH IDS</h2><dl><dt>PUYA P25Q80H</dt><dd><span class="chip">0x856014</span> · 1 MiB</dd><dt>UCUN UC25HQ80</dt><dd><span class="chip">0xB36014</span> · 1 MiB</dd></dl><p class="small">Unknown ≠ safe. Unreadable ≠ missing. FM-1 and SMK-37 share the AC791N platform, but their panel wiring and flash partition layouts differ. Keep a full-flash backup.</p><div class="refs"><a href="https://github.com/jvitkauskas/m-flasher">M-Flasher</a> · <a href="https://github.com/jvitkauskas/m-bootloader">m-bootloader (FM-1 / SMK-37)</a> · <a href="https://github.com/jvitkauskas/m-flasher/issues/13">Compatibility report</a> · <a href="https://github.com/JustMikeR/mvave-fm1-unbricker">Unbricker</a></div></section>
 <footer>INDEPENDENT COMMUNITY TOOL · Reports stay in this browser and are never uploaded. No erase, write, firmware update, bootloader install or recovery controls. Compatibility claims require evidence.</footer>
 </main>
 <script>
@@ -43,8 +43,8 @@ const esc=v=>String(v??"—").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">"
 const known={"0X856014":["Puya P25Q80H","Older reported flash variant"],"856014":["Puya P25Q80H","Older reported flash variant"],"0XB36014":["UCUN UC25HQ80","Newer reported flash variant"],"B36014":["UCUN UC25HQ80","Newer reported flash variant"]};
 const line=(k,v)=>"<dt>"+esc(k)+"</dt><dd>"+esc(v)+"</dd>";
 function boardProfile(model){
- const m=String(model||"").toUpperCase().replace(/[_-]/g,"");
- if(/SMK37|MKEP37|STARRYKEY37/.test(m))return {family:"SMK-37 family",key:"SEQ REC = download mode · SEQ PLAY = recovery menu",note:"Same JieLi AC791N platform as FM-1; different panel wiring and flash partition layout."};
+ const m=String(model||"").toUpperCase().replace(/[\s_-]/g,"");
+ if(/SMK37/.test(m))return {family:"SMK-37 family",key:"SEQ REC = download mode · SEQ PLAY = recovery menu",note:"Same JieLi AC791N platform as FM-1; different panel wiring and flash partition layout."};
  if(/FM1/.test(m))return {family:"FM-1",key:"REC = download mode · PLAY = recovery menu",note:"FM-1 board profile."};
  return {family:"Unknown board",key:"Not established",note:"Model not recognized. Do not apply FM-1 or SMK-37 recovery assumptions."};
 }
@@ -55,7 +55,7 @@ function render(d,demo=false){
  $("deviceDetails").innerHTML=[line("Model",d.model),line("Board profile",profile.family),line("Revision",d.hardware_revision),line("Identity",d.identity),line("Recovery keys",profile.key),line("Source",d.report_source),line("Timestamp",d.timestamp)].join("");
  const id=String(d.flash?.jedec_id??"").toUpperCase(),f=known[id],fw=d.firmware||{},ul=d.update_loader||{},b=d.bootloader||{},r=d.recovery||{},bs=b.status||"unknown";
  $("flashDetails").innerHTML=(f?'<p><strong>'+esc(f[0])+'</strong></p><p class="small">'+esc(f[1])+'</p>':'<p>'+badge("unknown")+' Unrecognized / not supplied</p>')+'<p>JEDEC: <span class="chip">'+esc(id||"not supplied")+'</span></p><p class="small">Capacity: '+esc(d.flash?.capacity_bytes?d.flash.capacity_bytes+" bytes":"not supplied")+'</p>'+(id==="0XB36014"||id==="B36014"?'<div class="diag">Newer flash. Older firmware or update loaders may reject this ID or fail to save settings.</div>':"");
- $("firmwareDetails").innerHTML='<p class="small">APPLICATION</p>'+[line("Name",fw.name),line("Version",fw.version),line("Chip support",fw.chip_support||"unknown")].join("")+'<p class="small">UPDATE LOADER</p>'+[line("Name",ul.name),line("Version",ul.version),line("Chip support",ul.chip_support||"unknown")].join("");
+ $("firmwareDetails").innerHTML='<p class="small">APPLICATION</p>'+[line("Name",fw.name),line("Version",fw.version),line("Target model",fw.target_model||"not supplied"),line("Chip support",fw.chip_support||"unknown")].join("")+'<p class="small">UPDATE LOADER</p>'+[line("Name",ul.name),line("Version",ul.version),line("Target model",ul.target_model||"not supplied"),line("Chip support",ul.chip_support||"unknown")].join("");
  $("bootDetails").innerHTML=badge(bs)+[line("Name",b.name),line("Version",b.version),line("Detection",b.detection_method),line("Board note",profile.note)].join("")+((bs==="missing"||bs==="unreadable"||bs==="unknown")?'<div class="diag">Identity not established. This does not prove the bootloader is absent.</div>':"");
  $("recoveryDetails").innerHTML=badge(r.status||"unknown")+'<p class="small">'+esc(r.summary||"Recovery path not verified.")+'</p><p class="small">Preserve your original full-flash backup. Check the documented JieLi download-mode / M-Flasher route before attempting recovery.</p>'+(r.url?'<a href="'+esc(r.url)+'" target="_blank" rel="noopener">Open recovery reference</a>':"");
  let risks=[];
