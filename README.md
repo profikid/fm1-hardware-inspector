@@ -34,6 +34,10 @@ The newer UCUN flash variant has been reported to be rejected by older firmware 
 - [Firmware Hub](https://github.com/firmware-hub) — firmware and recovery resources.
 - [MvaveFM1Unbricker](https://github.com/JustMikeR/mvave-fm1-unbricker) — device recovery project.
 
+## Deployment
+
+The site is published from the `main` branch by the GitHub Actions workflow in `.github/workflows/pages.yml`. A push to `main` triggers a new deployment.
+
 ## Development
 
 No build step or package installation is required. index.html is the complete static app. Open it locally or publish it with the included GitHub Pages workflow.
