@@ -25,6 +25,7 @@ dl{display:grid;grid-template-columns:125px 1fr;gap:5px 12px;margin:0;font-size:
 </head>
 <body><main>
 <header class="top"><div><div class="kicker">[ M-VAVE / HARDWARE LAB ]</div><h1 class="title">DIAGNOSTIC BAY</h1><div class="micro">FM-1 + SMK-37 // 8-BIT DEVICE HEALTH CHECK</div></div><div class="stamp">READ ONLY</div></header>
+<nav class="actions"><a class="filelabel" href="./help.html">[ HELP! I BRICKED IT ]</a></nav>
 <section class="panel hero notice"><div><div><span class="led"></span><strong>USB SCANNER OFFLINE</strong></div><p class="small">Browser-only build. Load a diagnostic JSON report. No fake live scan.</p></div><div class="tag">NO WRITE OPS</div><div class="actions wide"><label class="filelabel" for="reportFile">[ LOAD REPORT ]</label><input id="reportFile" type="file" accept=".json,application/json"><button id="demoBtn" class="secondary">[ DEMO FM-1 ]</button><button id="smkDemoBtn" class="secondary">[ DEMO SMK-37 ]</button><button id="clearBtn" class="secondary">[ RESET ]</button></div></section>
 <section id="report" class="report">
 <div class="panel"><div class="bar"><h2>01 / PATIENT SUMMARY</h2><span id="reportBadge" class="status">REPORT LOADED</span></div><div id="risk"></div><dl id="deviceDetails"></dl></div>
