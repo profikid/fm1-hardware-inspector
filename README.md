@@ -6,6 +6,10 @@ A conservative, read-only v1 single-page utility for reviewing M-VAVE FM-1 hardw
 
 https://profikid.github.io/fm1-hardware-inspector/
 
+## Emergency recovery guide
+
+If the device is bricked, start with the [FM-1 / SMK-37 recovery tutorial](https://profikid.github.io/fm1-hardware-inspector/help.html). It covers M-Flasher, m-bootloader, ROM download mode, and the model-specific hard-brick paths.
+
 ## What v1 does
 
 - Displays device details from a locally selected JSON report.
