@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101b1b">
+<meta name="description" content="Recovery guide for bricked M-VAVE FM-1 and SMK-37 Pro / Elite devices using M-Flasher and m-bootloader.">
+<title>HELP! I BRICKED IT // M-VAVE RECOVERY</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+:root{color-scheme:dark;--bg:#101b1b;--panel:#172727;--panel2:#203333;--line:#42615b;--ink:#d8f2dc;--muted:#91b5a7;--mint:#9dffbd;--amber:#ffd477;--red:#ff777e;--blue:#9bdcff;font:14px/1.65 'IBM Plex Mono',monospace}
+*{box-sizing:border-box}body{margin:0;background-color:var(--bg);background-image:linear-gradient(#ffffff06 1px,transparent 1px),linear-gradient(90deg,#ffffff06 1px,transparent 1px);background-size:4px 4px;color:var(--ink)}
+main{width:min(900px,100%);margin:auto;padding:24px 16px 40px}.top{border-bottom:3px solid var(--line);padding-bottom:16px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.kicker,.micro,.tag{font-size:10px;letter-spacing:.08em;color:var(--mint)}h1{font:clamp(15px,3vw,22px)/1.6 'Press Start 2P',monospace;color:var(--mint);margin:12px 0;text-shadow:3px 3px #315c4a}h2{font:11px/1.8 'Press Start 2P',monospace;color:var(--mint);margin:0 0 12px}h3{font-size:13px;color:var(--amber);margin:12px 0 4px}
+.stamp{font-size:10px;border:2px solid var(--amber);color:var(--amber);padding:7px;white-space:nowrap}.panel{background:var(--panel);border:2px solid var(--line);box-shadow:4px 4px 0 #081111;padding:15px;margin-top:14px}.alert{border-color:#806a3c;background:#2c2a1c}.danger{border-color:#81434a;background:#351f26}.good{border-color:#477a5d;background:#1d382b}
+p{margin:6px 0;color:var(--muted)}strong{color:var(--ink)}a{color:var(--blue);text-decoration:underline;text-underline-offset:3px}ul,ol{padding-left:22px;margin:8px 0}li{margin:5px 0}.small{font-size:11px}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.btn{display:inline-block;border:2px solid var(--mint);background:#244b3a;color:var(--mint);padding:9px 11px;text-decoration:none;font-weight:700;font-size:12px}.btn.secondary{border-color:var(--line);background:var(--panel2);color:var(--ink)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid .panel{margin-top:0}.steps{counter-reset:step}.steps li{padding-left:2px}.tag{display:inline-block;border:1px solid var(--line);padding:2px 6px;margin-right:5px}.warn{color:var(--amber)}code{color:var(--mint);background:#0c1717;padding:2px 5px;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0c1717;border:1px solid var(--line);padding:10px;font-size:12px;color:var(--mint)}
+details{border-top:1px solid var(--line);padding:10px 0}details:first-of-type{border-top:0}summary{cursor:pointer;color:var(--mint);font-weight:700}footer{border-top:2px solid var(--line);margin-top:18px;padding-top:12px;color:#78968c;font-size:10px}
+@media(max-width:620px){main{padding:16px 11px 30px}.top{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main>
+<header class="top"><div><div class="kicker">[ M-VAVE HARDWARE LAB / EMERGENCY DESK ]</div><h1>HELP! I BRICKED IT</h1><div class="micro">FM-1 · SMK-37 PRO · SMK-37 ELITE // RECOVERY GUIDE</div></div><div class="stamp">READ FIRST</div></header>
+
+<section class="panel alert"><strong>DON'T PANIC. DON'T KEEP FLASHING RANDOM FIRMWARE.</strong><p>A black screen does not automatically mean dead hardware. The JieLi chip has a built-in USB download mode that can still work when the synth firmware is broken.</p><p><strong>First rule:</strong> use a USB data cable, connect directly (no hub), and do not disconnect while a flash or verification is running. If Windows asks to format <code>UBOOT1.00</code> / <code>WL82 UBOOT1.00</code>, click <strong>Cancel</strong>.</p></section>
+
+<section class="panel"><h2>01 / TRIAGE — WHAT DOES THE COMPUTER SEE?</h2>
+<div class="grid">
+<div class="panel good"><h3>A · USB DEVICE APPEARS</h3><p>A disk/device called <code>UBOOT1.00</code> or <code>WL82 UBOOT1.00</code> appears, or the synth still appears as USB MIDI.</p><p><strong>Good news:</strong> start with M-Flasher. No RP2040 wiring should be needed.</p></div>
+<div class="panel danger"><h3>B · NOTHING APPEARS</h3><p>No USB MIDI device and no UBOOT disk after trying a known-good data cable, another port and a power cycle.</p><p>This is the hard-brick path. You may need a USB_KEY / RP2040 recovery device to force the chip into ROM download mode.</p></div>
+</div>
+<p class="small">On macOS the ROM device may appear as an unreadable removable disk. Do not initialize or erase it. On Windows check Device Manager or Disk Management; do not format it.</p>
+</section>
+
+<section class="panel"><h2>02 / THE NORMAL RESCUE — M-FLASHER</h2>
+<p><a class="btn" href="https://github.com/jvitkauskas/m-flasher/releases/latest">DOWNLOAD M-FLASHER</a> <a class="btn secondary" href="https://github.com/jvitkauskas/m-flasher">SOURCE + DOCUMENTATION</a></p>
+<ol class="steps">
+<li>Download the latest release for Windows, macOS or Linux. Install / extract it using the release's instructions. The app is unofficial and unsigned; only download it from the project's GitHub Releases.</li>
+<li>Connect the FM-1 or SMK-37 directly with a USB data cable and power it on.</li>
+<li><strong>If firmware is running:</strong> open M-Flasher. It should find the unit over USB MIDI. Press <strong>DOWNLOAD MODE</strong> in M-Flasher. This sends the device into the chip's ROM download mode.</li>
+<li><strong>If m-bootloader is installed:</strong> switch off, hold <strong>REC</strong> (FM-1) or <strong>SEQ REC</strong> (SMK-37), then switch on while holding the key.</li>
+<li><strong>If Felucca, SLOOP or Snoop37 is running:</strong> hold <strong>OCT− + OCT+</strong> for 5 seconds.</li>
+<li>Wait for M-Flasher to identify the device and read its flash. Check the reported model and flash chip. If it cannot confidently identify the board, stop; do not force the wrong board.</li>
+<li>Choose <strong>Back up the whole flash</strong> before writing anything. Keep the generated backup and JSON report somewhere safe. This contains factory calibration, Bluetooth identity/pairings, presets and user data.</li>
+<li>For a straightforward recovery, choose <strong>Install firmware</strong> and select the official <code>.fwsc</code> package for the exact model: FM-1, SMK-37 Pro or SMK-37 Elite. Review the flash map and the proposed changes before confirming.</li>
+<li>Let the write and verification finish. Do not unplug, power off, close the app or let the computer sleep during the operation.</li>
+<li>When M-Flasher reports success, unplug, switch off, wait 5 seconds, then power on. If it boots, make another backup before experimenting again.</li>
+</ol>
+<div class="panel alert"><strong>Do not select “erase settings / Bluetooth” casually.</strong> That can remove pairings and user settings. Do not restore another person's full-flash image as if it were yours; use your own backup so your device's factory data is preserved.</div>
+</section>
+
+<section class="panel"><h2>03 / INSTALL M-BOOTLOADER — PREVENT THE NEXT BRICK</h2>
+<p><a class="btn" href="https://github.com/jvitkauskas/m-bootloader/releases/latest">M-BOOTLOADER RELEASES</a> <a class="btn secondary" href="https://github.com/jvitkauskas/m-bootloader">README + SPEC</a></p>
+<p>m-bootloader adds a key-triggered download mode and a recovery menu. It supports FM-1 and SMK-37 Pro / Elite, but the boot image is board-specific.</p>
+<ol>
+<li>First make a complete M-Flasher backup. Do not skip this.</li>
+<li>Download the current m-bootloader release and select the correct image: <code>fm1-uboot.boot</code> for FM-1, or <code>smk37-uboot.boot</code> for SMK-37 Pro / Elite.</li>
+<li>In M-Flasher, open the bootloader action/tab, choose the matching <code>.boot</code> file and inspect the flash map. The bootloader operation should change only the boot area.</li>
+<li>Confirm only if M-Flasher identifies the correct model and chip key and the proposed write is limited to the boot area. Allow the write verification to complete.</li>
+<li>Power-cycle. Test the recovery menu: hold <strong>PLAY</strong> (FM-1) or <strong>SEQ PLAY</strong> (SMK-37) while powering on.</li>
+</ol>
+<p class="small warn">M-VAVE official updates and some custom firmware installers can put the stock bootloader back. If that happens, reinstall m-bootloader after making a fresh backup.</p>
+</section>
+
+<section class="panel"><h2>04 / RECOVERY MENU — WHEN FIRMWARE WILL NOT START</h2>
+<p>With m-bootloader installed, hold <strong>PLAY</strong> (FM-1) or <strong>SEQ PLAY</strong> (SMK-37) during power-on. If the firmware cannot start, the menu can also open by itself.</p>
+<ul>
+<li><strong>Download mode:</strong> safest route for M-Flasher to inspect, back up and reinstall firmware.</li>
+<li><strong>MIDI mode:</strong> lets a compatible browser installer communicate over USB MIDI, even if the main firmware is not running. Keep the installer tab in the foreground; it may read the package twice.</li>
+<li><strong>Boot app:</strong> tries the installed firmware. Use only when you know what is installed and why it failed.</li>
+<li><strong>Boot anyway:</strong> bypasses a checksum failure once. This is not a repair; avoid it unless you understand the image and accept the risk.</li>
+<li><strong>Wipe user data:</strong> erases only firmware-declared settings ranges, but still deletes data. It is not the first recovery step.</li>
+</ul>
+<p>For MIDI-mode reinstall, use the installer supplied by the firmware project and make sure it explicitly supports your exact model. If an install is interrupted, do not pull the cable mid-write. Follow that installer's resume/reconnect instructions.</p>
+</section>
+
+<section class="panel"><h2>05 / HARD BRICK — NO USB DEVICE AT ALL</h2>
+<p class="warn"><strong>Stop here if you're not comfortable with USB wiring.</strong> The next step uses a small RP2040 board / USB_KEY-style device to force the chip's ROM into download mode. It is not a firmware file you copy to the synth.</p>
+<h3>FM-1</h3>
+<p>Use the <a href="https://github.com/kurogedelic/FM-1-transporter">FM-1 Transporter</a> or the <a href="https://github.com/Quixotic7/MvaveFM1Unbricker">FM-1 Unbricker</a> guide. The Transporter uses an RP2040 board and a modified USB cable to assert the chip's recovery signal. Follow the repository's wiring diagram exactly; do not guess pins. Once ROM download mode appears, use M-Flasher for the backup and recovery if it recognizes the unit.</p>
+<h3>SMK-37 Pro / Elite</h3>
+<p>The SMK community has documented an RP2040-based route to force ROM download mode. The Reddit workflow reports the device appearing as <code>UBOOT1.00</code>, then uses the SMK's own firmware package and an SMK-specific extraction range. That is <strong>not</strong> the FM-1 unbrick script.</p>
+<p>Prefer this order: force ROM mode using a verified hardware guide → connect directly → let current M-Flasher identify the SMK-37 → make a full backup → use the model-matched SMK-37 firmware package. If M-Flasher does not recognize the board, stop and follow the SMK-specific community thread with care rather than running FM-1 commands against it.</p>
+<p><a class="btn secondary" href="https://www.reddit.com/r/MVaveFM1/comments/1xcr2r5/how_to_unbrick_mvave_smk37_pro/">SMK-37 community hard-brick walkthrough</a> <a class="btn secondary" href="https://www.reddit.com/r/MVaveFM1/comments/1x6l1z9/restoring_a_bricked_smk37/">SMK-37 ROM-mode discussion</a></p>
+<div class="panel danger"><strong>CRITICAL MODEL WARNING</strong><p><code>MvaveFM1Unbricker</code> is an FM-1 recovery project. Its author explicitly documents that the SMK-37 flash ID differs and the FM-1 restore script refuses it. Do not force the FM-1 firmware image, flash offsets or extraction script onto an SMK-37. The SMK-37 Reddit procedure is community-reported and is not a substitute for model validation by M-Flasher.</p></div>
+</section>
+
+<section class="panel"><h2>06 / KNOWN TRAPS FROM THE COMMUNITY</h2>
+<ul>
+<li><strong>Don't interrupt a stalled write immediately.</strong> Reddit reports several cases where disconnecting during a frozen update caused a black-screen device. Give the installer time and use its documented resume path.</li>
+<li><strong>Stock firmware between custom firmwares.</strong> One community workflow recommends returning to official stock firmware between different custom firmware families rather than flashing one custom image directly over another. Keep a backup first.</li>
+<li><strong>SMK-37 is not an FM-1.</strong> Same AC791N family does not mean identical board configuration, model identity or firmware package. Use Pro/Elite packages deliberately.</li>
+<li><strong>SMK-37 factory data matters.</strong> Calibration and Bluetooth/preset regions may be affected by custom installers. Back up before trying Baud Girl or switching firmware families.</li>
+<li><strong>Newer FM-1 flash chips:</strong> some late-2026 units report JEDEC <code>0xB36014</code>. m-bootloader support on that chip has limited hardware testing; read the warning in its current README and check the chip ID before installing it.</li>
+</ul>
+</section>
+
+<section class="panel"><h2>TOOLS / PRIMARY REFERENCES</h2>
+<ul>
+<li><a href="https://github.com/jvitkauskas/m-flasher">M-Flasher</a> — main backup, restore, firmware and bootloader utility.</li>
+<li><a href="https://github.com/jvitkauskas/m-bootloader">m-bootloader</a> — recovery menu, ROM download-mode keys and MIDI recovery.</li>
+<li><a href="https://github.com/Quixotic7/MvaveFM1Unbricker">MvaveFM1Unbricker</a> — FM-1-specific soft-brick recovery.</li>
+<li><a href="https://github.com/kurogedelic/FM-1-transporter">FM-1 Transporter</a> — RP2040 hard-brick hardware route.</li>
+<li><a href="https://www.m-vave.com/product?id=fm-1">M-VAVE FM-1 downloads</a> · <a href="https://www.m-vave.com/">M-VAVE official site</a></li>
+<li><a href="https://www.reddit.com/r/MVaveFM1/">r/MVaveFM1</a> — community recovery reports and firmware-specific support.</li>
+</ul>
+<p class="small">This is an independent community guide, not an official M-VAVE service procedure. Tools and workflows change; check the linked repositories' current README and releases before every recovery.</p></section>
+<footer><a href="./">← BACK TO HARDWARE DIAGNOSTIC BAY</a><br>INDEPENDENT COMMUNITY TOOL · NO AUTOMATIC USB WRITES · READ THE MODEL AND FLASH MAP BEFORE CONFIRMING</footer>
+</main></body></html>
