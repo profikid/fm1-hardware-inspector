@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101b1b">
-<meta name="description" content="8-bit medical-style, read-only M-VAVE FM-1 hardware diagnosis.">
-<title>FM-1 // DIAGNOSTIC BAY</title>
+<meta name="description" content="8-bit medical-style, read-only M-VAVE FM-1 and SMK-37 hardware diagnosis.">
+<title>M-VAVE // DIAGNOSTIC BAY</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 :root{color-scheme:dark;--bg:#101b1b;--panel:#172727;--panel2:#203333;--line:#42615b;--ink:#d8f2dc;--muted:#91b5a7;--mint:#9dffbd;--amber:#ffd477;--red:#ff777e;--blue:#9bdcff;font:14px/1.55 'IBM Plex Mono',monospace}
@@ -24,8 +24,8 @@ dl{display:grid;grid-template-columns:125px 1fr;gap:5px 12px;margin:0;font-size:
 </style>
 </head>
 <body><main>
-<header class="top"><div><div class="kicker">[ M-VAVE FM-1 / HARDWARE LAB ]</div><h1 class="title">DIAGNOSTIC BAY</h1><div class="micro">8-BIT DEVICE HEALTH CHECK // V1.1</div></div><div class="stamp">READ ONLY</div></header>
-<section class="panel hero notice"><div><div><span class="led"></span><strong>USB SCANNER OFFLINE</strong></div><p class="small">Browser-only build. Load a diagnostic JSON report to run the check. No fake live scan.</p></div><div class="tag">NO WRITE OPS</div><div class="actions wide"><label class="filelabel" for="reportFile">[ LOAD REPORT ]</label><input id="reportFile" type="file" accept=".json,application/json"><button id="demoBtn" class="secondary">[ DEMO SCAN ]</button><button id="clearBtn" class="secondary">[ RESET ]</button></div></section>
+<header class="top"><div><div class="kicker">[ M-VAVE / HARDWARE LAB ]</div><h1 class="title">DIAGNOSTIC BAY</h1><div class="micro">FM-1 + SMK-37 // 8-BIT DEVICE HEALTH CHECK</div></div><div class="stamp">READ ONLY</div></header>
+<section class="panel hero notice"><div><div><span class="led"></span><strong>USB SCANNER OFFLINE</strong></div><p class="small">Browser-only build. Load a diagnostic JSON report. No fake live scan.</p></div><div class="tag">NO WRITE OPS</div><div class="actions wide"><label class="filelabel" for="reportFile">[ LOAD REPORT ]</label><input id="reportFile" type="file" accept=".json,application/json"><button id="demoBtn" class="secondary">[ DEMO FM-1 ]</button><button id="smkDemoBtn" class="secondary">[ DEMO SMK-37 ]</button><button id="clearBtn" class="secondary">[ RESET ]</button></div></section>
 <section id="report" class="report">
 <div class="panel"><div class="bar"><h2>01 / PATIENT SUMMARY</h2><span id="reportBadge" class="status">REPORT LOADED</span></div><div id="risk"></div><dl id="deviceDetails"></dl></div>
 <div class="grid">
@@ -34,7 +34,7 @@ dl{display:grid;grid-template-columns:125px 1fr;gap:5px 12px;margin:0;font-size:
 <section class="panel"><h2>04 / BOOTLOADER</h2><div id="bootDetails"></div></section>
 <section class="panel"><h2>05 / RECOVERY</h2><div id="recoveryDetails"></div></section>
 </div></section>
-<section class="panel"><h2>REFERENCE / KNOWN FLASH IDS</h2><dl><dt>PUYA P25Q80H</dt><dd><span class="chip">0x856014</span> · 1 MiB</dd><dt>UCUN UC25HQ80</dt><dd><span class="chip">0xB36014</span> · 1 MiB</dd></dl><p class="small">Unknown ≠ safe. Unreadable ≠ missing. Keep an untouched full-flash backup before any modification.</p><div class="refs"><a href="https://github.com/jvitkauskas/m-flasher">M-Flasher</a> · <a href="https://github.com/jvitkauskas/m-flasher/issues/13">Compatibility report</a> · <a href="https://github.com/JustMikeR/mvave-fm1-unbricker">Unbricker</a></div></section>
+<section class="panel"><h2>REFERENCE / KNOWN FLASH IDS</h2><dl><dt>PUYA P25Q80H</dt><dd><span class="chip">0x856014</span> · 1 MiB</dd><dt>UCUN UC25HQ80</dt><dd><span class="chip">0xB36014</span> · 1 MiB</dd></dl><p class="small">Unknown ≠ safe. Unreadable ≠ missing. FM-1 and SMK-37 share the AC791N platform, but their panel wiring and flash partition layouts differ. Keep a full-flash backup.</p><div class="refs"><a href="https://github.com/jvitkauskas/m-flasher">M-Flasher</a> · <a href="https://github.com/jvitkauskas/m-flasher/issues/13">Compatibility report</a> · <a href="https://github.com/JustMikeR/mvave-fm1-unbricker">Unbricker</a></div></section>
 <footer>INDEPENDENT COMMUNITY TOOL · Reports stay in this browser and are never uploaded. No erase, write, firmware update, bootloader install or recovery controls. Compatibility claims require evidence.</footer>
 </main>
 <script>
@@ -42,21 +42,35 @@ const $=id=>document.getElementById(id);
 const esc=v=>String(v??"—").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const known={"0X856014":["Puya P25Q80H","Older reported flash variant"],"856014":["Puya P25Q80H","Older reported flash variant"],"0XB36014":["UCUN UC25HQ80","Newer reported flash variant"],"B36014":["UCUN UC25HQ80","Newer reported flash variant"]};
 const line=(k,v)=>"<dt>"+esc(k)+"</dt><dd>"+esc(v)+"</dd>";
+function boardProfile(model){
+ const m=String(model||"").toUpperCase().replace(/[_-]/g,"");
+ if(/SMK37|MKEP37|STARRYKEY37/.test(m))return {family:"SMK-37 family",key:"SEQ REC = download mode · SEQ PLAY = recovery menu",note:"Same JieLi AC791N platform as FM-1; different panel wiring and flash partition layout."};
+ if(/FM1/.test(m))return {family:"FM-1",key:"REC = download mode · PLAY = recovery menu",note:"FM-1 board profile."};
+ return {family:"Unknown board",key:"Not established",note:"Model not recognized. Do not apply FM-1 or SMK-37 recovery assumptions."};
+}
 const badge=(s)=>'<span class="status '+(s==="verified"?"good":s==="incompatible"?"bad":s==="experimental"?"warn":"")+'">'+esc(s||"unknown")+"</span>";
 function render(d,demo=false){
  $("report").classList.add("visible");$("reportBadge").textContent=demo?"DEMO DATA":"IMPORTED JSON";
- $("deviceDetails").innerHTML=[line("Model",d.model),line("Revision",d.hardware_revision),line("Identity",d.identity),line("Source",d.report_source),line("Timestamp",d.timestamp)].join("");
+ const profile=boardProfile(d.model),isSmk=profile.family==="SMK-37 family";
+ $("deviceDetails").innerHTML=[line("Model",d.model),line("Board profile",profile.family),line("Revision",d.hardware_revision),line("Identity",d.identity),line("Recovery keys",profile.key),line("Source",d.report_source),line("Timestamp",d.timestamp)].join("");
  const id=String(d.flash?.jedec_id??"").toUpperCase(),f=known[id],fw=d.firmware||{},ul=d.update_loader||{},b=d.bootloader||{},r=d.recovery||{},bs=b.status||"unknown";
  $("flashDetails").innerHTML=(f?'<p><strong>'+esc(f[0])+'</strong></p><p class="small">'+esc(f[1])+'</p>':'<p>'+badge("unknown")+' Unrecognized / not supplied</p>')+'<p>JEDEC: <span class="chip">'+esc(id||"not supplied")+'</span></p><p class="small">Capacity: '+esc(d.flash?.capacity_bytes?d.flash.capacity_bytes+" bytes":"not supplied")+'</p>'+(id==="0XB36014"||id==="B36014"?'<div class="diag">Newer flash. Older firmware or update loaders may reject this ID or fail to save settings.</div>':"");
  $("firmwareDetails").innerHTML='<p class="small">APPLICATION</p>'+[line("Name",fw.name),line("Version",fw.version),line("Chip support",fw.chip_support||"unknown")].join("")+'<p class="small">UPDATE LOADER</p>'+[line("Name",ul.name),line("Version",ul.version),line("Chip support",ul.chip_support||"unknown")].join("");
- $("bootDetails").innerHTML=badge(bs)+[line("Name",b.name),line("Version",b.version),line("Detection",b.detection_method)].join("")+((bs==="missing"||bs==="unreadable"||bs==="unknown")?'<div class="diag">Identity not established. This does not prove the bootloader is absent.</div>':"");
+ $("bootDetails").innerHTML=badge(bs)+[line("Name",b.name),line("Version",b.version),line("Detection",b.detection_method),line("Board note",profile.note)].join("")+((bs==="missing"||bs==="unreadable"||bs==="unknown")?'<div class="diag">Identity not established. This does not prove the bootloader is absent.</div>':"");
  $("recoveryDetails").innerHTML=badge(r.status||"unknown")+'<p class="small">'+esc(r.summary||"Recovery path not verified.")+'</p><p class="small">Preserve your original full-flash backup. Check the documented JieLi download-mode / M-Flasher route before attempting recovery.</p>'+(r.url?'<a href="'+esc(r.url)+'" target="_blank" rel="noopener">Open recovery reference</a>':"");
- let risks=[];if((id==="0XB36014"||id==="B36014")&&(!String(fw.chip_support||"").toUpperCase().includes("B36014")||!String(ul.chip_support||"").toUpperCase().includes("B36014")))risks.push("Firmware / update-loader support for 0xB36014 is not explicitly evidenced.");
+ let risks=[];
+ if(profile.family==="Unknown board")risks.push("Board model is not identified. No model-specific compatibility conclusion is possible.");
+ if(isSmk){
+  if(!fw.target_model&&!ul.target_model)risks.push("No SMK-37-specific firmware / update-loader target is recorded. Shared AC791N hardware does not make FM-1 packages interchangeable.");
+  if((fw.target_model&&/FM.?1/i.test(fw.target_model))||(ul.target_model&&/FM.?1/i.test(ul.target_model)))risks.push("A firmware or update-loader target is labelled FM-1, not SMK-37. Stop and verify the package before flashing.");
+ }
+ if((id==="0XB36014"||id==="B36014")&&(!String(fw.chip_support||"").toUpperCase().includes("B36014")||!String(ul.chip_support||"").toUpperCase().includes("B36014")))risks.push("Firmware / update-loader support for 0xB36014 is not explicitly evidenced.");
  if(["missing","unreadable","unknown"].includes(bs))risks.push("Bootloader is not positively identified.");
  if(d.compatibility_status!=="verified")risks.push("Overall compatibility is not verified. Stop before writing.");
  $("risk").innerHTML=risks.length?'<div class="diag bad"><strong>DIAGNOSIS: CAUTION</strong><ul>'+risks.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul></div>":'<div class="diag good"><strong>DIAGNOSIS: REPORTED VERIFIED</strong><br>Claim supplied by report; not independently verified here.</div>';
 }
 $("reportFile").addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;try{const d=JSON.parse(await file.text());if(!d||typeof d!=="object"||(!d.flash&&!d.model))throw Error("Unrecognized report");render(d)}catch(err){alert("Report error: "+err.message)}e.target.value=""});
 $("demoBtn").onclick=()=>render({model:"M-VAVE FM-1 (sample)",hardware_revision:"unknown",identity:"DEMO ONLY",report_source:"Built-in sample — not connected",timestamp:"not live",flash:{jedec_id:"0xB36014",capacity_bytes:1048576},firmware:{name:"Example firmware",version:"unknown",chip_support:"unknown"},update_loader:{name:"Example loader",version:"unknown",chip_support:"unknown"},bootloader:{status:"unknown",name:"not detected",detection_method:"sample"},recovery:{status:"unknown",summary:"No recovery path tested."},compatibility_status:"unknown"},true);
+$("smkDemoBtn").onclick=()=>render({model:"M-VAVE SMK-37 Pro (sample)",hardware_revision:"unknown",identity:"DEMO ONLY",report_source:"Built-in sample — not connected",timestamp:"not live",flash:{jedec_id:"unknown",capacity_bytes:1048576},firmware:{name:"Example SMK-37 firmware",version:"unknown",chip_support:"unknown"},update_loader:{name:"Example SMK-37 loader",version:"unknown",chip_support:"unknown"},bootloader:{status:"unknown",name:"not detected",detection_method:"sample"},recovery:{status:"unknown",summary:"No recovery path tested."},compatibility_status:"unknown"},true);
 $("clearBtn").onclick=()=>{$("report").classList.remove("visible");$("reportFile").value=""};
 </script></body></html>
