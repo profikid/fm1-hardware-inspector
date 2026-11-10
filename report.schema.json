@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://profikid.github.io/fm1-hardware-inspector/report.schema.json",
+  "title": "FM-1 Hardware Inspector report",
+  "type": "object",
+  "properties": {
+    "model": {
+      "type": "string"
+    },
+    "hardware_revision": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "identity": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "report_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "flash": {
+      "type": "object",
+      "properties": {
+        "jedec_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "JEDEC ID in hexadecimal, e.g. 0x856014 or 0xB36014"
+        },
+        "capacity_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "firmware": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "chip_support": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "update_loader": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "chip_support": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "bootloader": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "detected",
+            "missing",
+            "unreadable",
+            "unknown"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "detection_method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "recovery": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "verified",
+            "experimental",
+            "incompatible",
+            "unknown"
+          ]
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        }
+      },
+      "additionalProperties": true
+    },
+    "compatibility_status": {
+      "enum": [
+        "verified",
+        "experimental",
+        "incompatible",
+        "unknown"
+      ]
+    }
+  },
+  "required": [
+    "model"
+  ],
+  "additionalProperties": true
+}
